@@ -228,15 +228,19 @@ async function buildTemplate(componentPath, componentsDir, consumerReact) {
       );
 
       let finalHtml = processed;
-      try {
-        const prettierConfig = await resolveConfig(componentPath);
-        finalHtml = await format(processed, {
-          ...prettierConfig,
-          parser: "html",
-          printWidth: 120,
-        });
-      } catch (e) {
-        console.error(`✗ Error formatting ${componentPath}:`, e.message);
+      const hasConditionalComments =
+        processed.includes("<!--[if") || processed.includes("<![endif]");
+      if (!hasConditionalComments) {
+        try {
+          const prettierConfig = await resolveConfig(componentPath);
+          finalHtml = await format(processed, {
+            ...prettierConfig,
+            parser: "html",
+            printWidth: 120,
+          });
+        } catch (e) {
+          console.error(`✗ Error formatting ${componentPath}:`, e.message);
+        }
       }
 
       const msoStart =
