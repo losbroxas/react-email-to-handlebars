@@ -212,7 +212,7 @@ async function buildTemplate(componentPath, componentsDir, consumerReact) {
         .replace(/<!--(?!\[)[\s\S]*?-->/g, "")
         .replace(/data-id="[^"]*"/g, "");
 
-      // 1. YAHOO FIX MARKER
+      // Yahoo fix marker
       const hasYahooFix = processed.includes("<yahoo-fix></yahoo-fix>");
       processed = processed.replace(/<yahoo-fix><\/yahoo-fix>/g, "");
 
@@ -268,7 +268,7 @@ async function buildTemplate(componentPath, componentsDir, consumerReact) {
         finalHtml = oldDocType + "\n" + finalHtml;
       }
 
-      // 2. YAHOO FIX PLACEMENT (Before the main head)
+      // Yahoo fix placement (before the main head)
       if (hasYahooFix) {
         finalHtml = finalHtml.replace(/<head>/, "<head></head>\n<head>");
       }
