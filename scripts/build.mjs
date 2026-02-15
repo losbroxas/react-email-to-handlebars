@@ -24,7 +24,7 @@ const require = createRequire(import.meta.url);
 /** Resolve React and react-dom/server from the consumer's node_modules so the bundle and the script use the same React instance. */
 function getConsumerReact(cwd) {
   const consumerRequire = createRequire(
-    pathToFileURL(join(cwd, "package.json")).href
+    pathToFileURL(join(cwd, "package.json")).href,
   );
   return {
     React: consumerRequire("react"),
@@ -110,12 +110,12 @@ function processRecursiveTags(html) {
           const ifPart = content.substring(0, elseMatch.index);
           const elseBody = elseMatch[1];
           const afterPart = content.substring(
-            elseMatch.index + elseMatch[0].length
+            elseMatch.index + elseMatch[0].length,
           );
           return `${parts}${ifPart}{{else}}${elseBody}${afterPart}${ends}`;
         }
         return `${parts}${content}${ends}`;
-      }
+      },
     );
     processed = next;
     if (!changed) break;
@@ -132,10 +132,10 @@ function processRecursiveTags(html) {
         const replacement = v || "this";
         const pat = new RegExp(
           `${arr.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.\\[0\\]`,
-          "g"
+          "g",
         );
         return `${tag}${content.replace(pat, replacement)}{{/each}}`;
-      }
+      },
     );
     processed = next;
     if (!changed) break;
@@ -147,7 +147,7 @@ function processRecursiveTags(html) {
 function postProcessHandlebars(html, propUsages) {
   let processed = html;
   const sortedMarkers = Array.from(propUsages.keys()).sort(
-    (a, b) => b.length - a.length
+    (a, b) => b.length - a.length,
   );
   for (const marker of sortedMarkers) {
     const path = propUsages.get(marker);
@@ -192,7 +192,7 @@ async function buildTemplate(componentPath, componentsDir, consumerReact) {
           for (const key of Object.keys(obj)) {
             newObj[key] = createDataWithMarkers(
               obj[key],
-              path ? `${path}.${key}` : key
+              path ? `${path}.${key}` : key,
             );
           }
           return newObj;
@@ -204,7 +204,7 @@ async function buildTemplate(componentPath, componentsDir, consumerReact) {
 
       const markerProps = createDataWithMarkers(Component.PreviewProps || {});
       const html = renderToStaticMarkup(
-        React.createElement(Component, markerProps)
+        React.createElement(Component, markerProps),
       );
 
       // Strip normal HTML comments but preserve conditional comments (e.g. <!--[if mso]>...<![endif]-->)
@@ -224,13 +224,13 @@ async function buildTemplate(componentPath, componentsDir, consumerReact) {
           if (!attrs.includes("width="))
             return `<table${attrs}width="700" style="${style}"`;
           return match;
-        }
+        },
       );
 
       let finalHtml = processed;
       const hasConditionalComments =
         processed.includes("<!--[if") || processed.includes("<![endif]");
-      if (!hasConditionalComments) {
+      if (!hasConditionalComments || process.argv.includes("--format")) {
         try {
           const prettierConfig = await resolveConfig(componentPath);
           finalHtml = await format(processed, {
@@ -257,7 +257,7 @@ async function buildTemplate(componentPath, componentsDir, consumerReact) {
 
       finalHtml = finalHtml.replace(
         /<body/g,
-        '<body id="body" bgcolor="#F1EFE5"'
+        '<body id="body" bgcolor="#F1EFE5"',
       );
       const oldDocType =
         '<!DOCTYPE html>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" lang="nl">';
@@ -274,7 +274,7 @@ async function buildTemplate(componentPath, componentsDir, consumerReact) {
       }
 
       finalHtml = finalHtml.replace(/<html[^>]*>/g, (m, offset) =>
-        offset < 50 ? m : ""
+        offset < 50 ? m : "",
       );
       if (!finalHtml.trim().endsWith("</html>"))
         finalHtml = finalHtml.trim() + "\n</html>";
@@ -290,13 +290,13 @@ async function buildTemplate(componentPath, componentsDir, consumerReact) {
         componentsDir,
         relativePath
           .replace(/\.tsx$/, ".handlebars")
-          .replace(/\.jsx$/, ".handlebars")
+          .replace(/\.jsx$/, ".handlebars"),
       );
       if (!existsSync(dirname(outputPath)))
         mkdirSync(dirname(outputPath), { recursive: true });
       writeFileSync(outputPath, finalHtml, "utf-8");
       console.log(
-        `✓ Built: ${relativePath} → ${relativePath.replace(/\.tsx$/, ".handlebars")}`
+        `✓ Built: ${relativePath} → ${relativePath.replace(/\.tsx$/, ".handlebars")}`,
       );
     } finally {
       if (existsSync(tempFile)) unlinkSync(tempFile);
