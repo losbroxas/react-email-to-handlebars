@@ -4,7 +4,9 @@ export const isHandlebarsBuild =
   typeof process !== "undefined" && process.env?.IS_HANDLEBARS_BUILD === "true";
 
 const HandlebarsContext = createContext<any>(null);
-const InsideEachContext = createContext<boolean>(false);
+const InsideEachContext = createContext<{ value: any; index?: number } | null>(
+  null,
+);
 
 /**
  * Evaluates a string condition against a data object.
@@ -76,7 +78,7 @@ export const Handlebars = {
     const result = evaluate(condition, data);
     const childrenArray = React.Children.toArray(children);
     const elseIndex = childrenArray.findIndex(
-      (child: any) => child.type === Handlebars.Else
+      (child: any) => child.type === Handlebars.Else,
     );
 
     if (elseIndex !== -1) {
@@ -116,7 +118,7 @@ export const Handlebars = {
   }) => {
     const data = useContext(HandlebarsContext);
     const inner = (
-      <InsideEachContext.Provider value={true}>
+      <InsideEachContext.Provider value={{ value: data?.[array] }}>
         {children}
       </InsideEachContext.Provider>
     );
@@ -128,7 +130,15 @@ export const Handlebars = {
     const show = evaluate(array, data);
     if (!show) return null;
 
-    return inner;
+    return data?.[array]?.map((item: any, index: number) => {
+      return (
+        <InsideEachContext.Provider
+          value={{ value: data?.[array], index: index }}
+        >
+          {children}
+        </InsideEachContext.Provider>
+      );
+    });
   },
 
   /**
@@ -137,10 +147,17 @@ export const Handlebars = {
    */
   Val: ({ name, value }: { name: string; value?: string | number }) => {
     const insideEach = useContext(InsideEachContext);
+
     if (isHandlebarsBuild) {
       const ref = insideEach ? `this.${name}` : name;
       return <>{`{{${ref}}}`}</>;
     }
+
+    if (insideEach) {
+      return <>{insideEach.value?.[insideEach.index ?? 0]}</>;
+    }
+
     return <>{value}</>;
   },
 };
+

@@ -1,6 +1,6 @@
 {
   "name": "react-to-handlebars",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Convert React components to Handlebars templates",
   "license": "MIT",
   "main": "src/index.tsx",
@@ -32,3 +32,4 @@
     "react-dom": "^19.0.0"
   }
 }
+
